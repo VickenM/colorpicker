@@ -1,24 +1,58 @@
 from PySide6 import QtCore, QtGui, QtWidgets
+def get_color_hue_image()->QtGui.QImage:
+    width = 360
+    image = QtGui.QImage(width, 1, QtGui.QImage.Format_RGB888)
+    image.fill(QtGui.QColor(0,0,0))
+    
+    c = QtGui.QColor('#ff0000')
+    for x in range(width):
+        image.setPixelColor(x, 0, c)
+        h,s,v,l = c.getHsv()
+        c.setHsv(h+1, s, v, l)
+
+    return image
+    return QtGui.QPixmap.fromImage(image)
 
 class Main(QtWidgets.QLabel):
     def __init__(self):
         super().__init__()
-        self.setPixmap(self.get_pixmap().scaled(self.width(), 50))
+        self.image: QtGui.QImage = get_color_hue_image()
+        self.setPixmap(QtGui.QPixmap.fromImage(self.image))
+        self.click_pos = None
 
-    def get_pixmap(self):
-        width = 360
-        height = 50
-        image = QtGui.QImage(width, height, QtGui.QImage.Format_RGB888)
-        image.fill(QtGui.QColor(0,0,0))
-        
-        c = QtGui.QColor('#ff0000')
-        for x in range(360):
-            for y in range(height):
-                image.setPixelColor(x, y, c)
-            h,s,v,l = c.getHsv()
-            c.setHsv(h+1, s, v, l)
 
-        return QtGui.QPixmap.fromImage(image)
+    def resizeEvent(self, event):
+        self.setPixmap(self.pixmap().scaled(self.width(), self.height()))
+        return super().resizeEvent(event)
+
+    def mousePressEvent(self, event):
+        super().mousePressEvent(event)
+        image = self.pixmap().toImage()
+        c = image.pixelColor(event.position().toPoint())
+        print(event.position().toPoint(), c)
+        self.click_pos = event.position().toPoint()
+        self.repaint()
+
+    def mouseMoveEvent(self, event):
+        super().mouseMoveEvent(event)
+        if event.buttons() & QtCore.Qt.LeftButton:
+            self.click_pos = event.position().toPoint()
+            self.repaint()
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+
+        painter = QtGui.QPainter(self)
+
+        pen = QtGui.QPen(QtGui.QColor(255, 255, 255))
+        pen.setWidth(1)
+        painter.setPen(pen)
+
+        painter.setBrush(QtCore.Qt.NoBrush)
+        if self.click_pos:
+            painter.drawLine(self.click_pos.x(), 0, self.click_pos.x(), self.height())
+            painter.drawEllipse(self.click_pos, 10, 10)
+        painter.end()
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication()
