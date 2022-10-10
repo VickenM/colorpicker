@@ -42,6 +42,7 @@ class Main(QtWidgets.QLabel):
         super().paintEvent(event)
 
         painter = QtGui.QPainter(self)
+        painter.setRenderHint(painter.Antialiasing)
 
         pen = QtGui.QPen(QtGui.QColor(255, 255, 255))
         pen.setWidth(1)

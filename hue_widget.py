@@ -17,21 +17,20 @@ class HueWidget(QtWidgets.QLabel):
     def __init__(self):
         super().__init__()
         self.image: QtGui.QImage = get_color_hue_image()
-        self.setPixmap(QtGui.QPixmap.fromImage(self.image))
+        self._pixmap = QtGui.QPixmap.fromImage(self.image)
+        #self.setPixmap(self._pixmap)
         self.click_pos = None
 
-
     def resizeEvent(self, event):
-        self.setPixmap(QtGui.QPixmap.fromImage(self.image).scaled(self.width(), self.height()))
-#        self.setPixmap(self.pixmap().scaled(self.width(), self.height()))
-        return super().resizeEvent(event)
+        super().resizeEvent(event)
+        self.setPixmap(self._pixmap.scaled(self.width(), self.height()))
 
     def mousePressEvent(self, event):
         super().mousePressEvent(event)
-        image = self.pixmap().toImage()
-        c = image.pixelColor(event.position().toPoint())
-        print(event.position().toPoint(), c)
         self.click_pos = event.position().toPoint()
+        image = self.pixmap().toImage()
+        color = image.pixelColor(self.click_pos)
+        print(event.position().toPoint(), color)
         self.repaint()
 
     def mouseMoveEvent(self, event):
@@ -44,19 +43,19 @@ class HueWidget(QtWidgets.QLabel):
         super().paintEvent(event)
 
         painter = QtGui.QPainter(self)
+        painter.setRenderHint(painter.Antialiasing)
 
         pen = QtGui.QPen(QtGui.QColor(255, 255, 255))
-        pen.setWidth(1)
+        pen.setWidth(2)
         painter.setPen(pen)
 
         painter.setBrush(QtCore.Qt.NoBrush)
         if self.click_pos:
             painter.drawLine(self.click_pos.x(), 0, self.click_pos.x(), self.height())
-            painter.drawEllipse(self.click_pos, 10, 10)
         painter.end()
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication()
-    main = Main()
+    main = HueWidget()
     main.show()
     app.exec()
