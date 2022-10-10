@@ -30,8 +30,11 @@ class SaturationValueWidget(QtWidgets.QLabel):
     @property
     def _point(self):
         x = int(self.width() * self._pos.x())
+        x = max(0, min(x, self.width()-1))
+
         y = int(self.height() * self._pos.y())
-        return QtCore.QPoint(x,y)
+        y = max(0, min(y, self.height()-1))
+        return QtCore.QPoint(x, y)
 
     def get_color(self):
         color = self.pixmap().toImage().pixelColor(self._point)

@@ -4,6 +4,43 @@ from hue_widget import HueWidget
 from saturation_value_widget import SaturationValueWidget
 from color_widget import ColorWidget
 
+class ColorInfoWidget(QtWidgets.QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        self._color = QtGui.QColor()
+        
+        self.rgb_label = QtWidgets.QLabel()
+        self.hsv_label = QtWidgets.QLabel()
+        self.hex_label = QtWidgets.QLabel()
+
+        self._init_layout()
+
+    def _init_layout(self):
+        rgb_layout = QtWidgets.QHBoxLayout()
+        rgb_layout.addWidget(QtWidgets.QLabel('RGB'))
+        rgb_layout.addWidget(self.rgb_label)
+
+        hsv_layout = QtWidgets.QHBoxLayout()
+        hsv_layout.addWidget(QtWidgets.QLabel('HSV'))
+        hsv_layout.addWidget(self.hsv_label)
+
+        hex_layout = QtWidgets.QHBoxLayout()
+        hex_layout.addWidget(QtWidgets.QLabel('HEX'))
+        hex_layout.addWidget(self.hex_label)
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.addLayout(rgb_layout)
+        layout.addLayout(hsv_layout)
+        layout.addLayout(hex_layout)
+
+        self.setLayout(layout)
+
+    def set_color(self, color):
+        self._color = color
+        self.rgb_label.setText(','.join([str(c) for c in self._color.getRgb()]))
+        self.hsv_label.setText(','.join([str(c) for c in self._color.getHsv()]))
+        self.hex_label.setText(self._color.name())
+
 class ColorPickerWidget(QtWidgets.QWidget):
     def __init__(self, parent: QtWidgets.QWidget|None = None):
         super().__init__(parent=parent)
@@ -17,11 +54,13 @@ class ColorPickerWidget(QtWidgets.QWidget):
 
         self.color_widget = ColorWidget()
         self.color_widget.setFixedSize(QtCore.QSize(100, 100))
-        self.set_color(self.saturation_value_widget.get_color())
+
+        self.color_info_widget = ColorInfoWidget()
 
         self._init_connections()
         self._init_layout()
    
+        self.set_color(self.saturation_value_widget.get_color())
 #        color = self.hue_widget.get_color()
 #        self.saturation_value_widget.set_position(QtCore.QPointF(0.25, 0.1))
         #self.saturation_value_widget.setFixedSize(700, 200)
@@ -31,9 +70,13 @@ class ColorPickerWidget(QtWidgets.QWidget):
         picker_layout.addWidget(self.saturation_value_widget)
         picker_layout.addWidget(self.hue_widget)
 
-        layout = QtWidgets.QHBoxLayout()
-        layout.addWidget(self.color_widget)
-        layout.addLayout(picker_layout)
+        preview_layout = QtWidgets.QHBoxLayout()
+        preview_layout.addWidget(self.color_widget)
+        preview_layout.addLayout(picker_layout)
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.addLayout(preview_layout)
+        layout.addWidget(self.color_info_widget)
 
         self.setLayout(layout)
 
@@ -50,6 +93,7 @@ class ColorPickerWidget(QtWidgets.QWidget):
 
     def set_color(self, color: QtGui.QColor):
         self.color_widget.set_color(color)
+        self.color_info_widget.set_color(color)
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication()
