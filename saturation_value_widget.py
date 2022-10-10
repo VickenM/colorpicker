@@ -17,39 +17,57 @@ class SaturationValueWidget(QtWidgets.QLabel):
         self.image: QtGui.QImage = get_color_saturation_and_value_image()
         self._pixmap: QtGui.QPixmap = QtGui.QPixmap.fromImage(self.image)
         self.setPixmap(self._pixmap)
-        self.click_pos = None
+        self._click_pos = QtCore.QPoint(0, 0)
+        self._pos = QtCore.QPointF(0.0, 0.0)
+
+    def get_color(self):
+        color = self._pixmap.toImage().pixelColor(self._click_pos)
+        return color
+
+    def set_position(self, position: QtCore.QPointF):
+        self._pos = position
+        self._click_pos.setX(int(self.width() * self._pos.x()))
+        self._click_pos.setY(int(self.height() * self._pos.y()))
+
+#    def get_position(self):
+#        x = int(self.width() * self._pos.x())
+#        y = int(self.height() * self._pos.y())
+#        return QtCore.QPoint(x,y)
 
     def resizeEvent(self, event):
         self.setPixmap(self._pixmap.scaled(self.width(), self.height()))
+
+        x = int(self._pos.x() * self.width())
+        y = int(self._pos.y() * self.height())
+        self._click_pos = QtCore.QPoint(x, y)
         return super().resizeEvent(event)
 
     def mousePressEvent(self, event):
         super().mousePressEvent(event)
-        image = self._pixmap.toImage()
-        c = image.pixelColor(event.position().toPoint())
-        print(event.position().toPoint(), c)
-        self.click_pos = event.position().toPoint()
+        self._click_pos = event.position().toPoint()
+        self._pos = QtCore.QPointF(self._click_pos.x()/ self.width(), self._click_pos.y()/self.height())
         self.repaint()
 
     def mouseMoveEvent(self, event):
         super().mouseMoveEvent(event)
         if event.buttons() & QtCore.Qt.LeftButton:
-            self.click_pos = event.position().toPoint()
+            self._click_pos = event.position().toPoint()
+            self._pos = QtCore.QPointF(self._click_pos.x()/ self.width(), self._click_pos.y()/self.height())
             self.repaint()
 
     def paintEvent(self, event):
         super().paintEvent(event)
 
         painter = QtGui.QPainter(self)
-        painter.setRenderHint(painter.Antialiasing)
+#        painter.setRenderHint(painter.Antialiasing)
 
         pen = QtGui.QPen(QtGui.QColor(255, 255, 255))
-        pen.setWidth(2)
+        pen.setWidth(1)
         painter.setPen(pen)
 
-        painter.setBrush(QtCore.Qt.NoBrush)
-        if self.click_pos:
-            painter.drawEllipse(self.click_pos, 10, 10)
+#        painter.setBrush(QtCore.Qt.NoBrush)
+        if self._click_pos:
+            painter.drawEllipse(self._click_pos, 10, 10)
         painter.end()
 
 if __name__ == '__main__':

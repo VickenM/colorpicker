@@ -57,6 +57,6 @@ class HueWidget(QtWidgets.QLabel):
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication()
-    main = Main()
+    main = HueWidget()
     main.show()
     app.exec()
