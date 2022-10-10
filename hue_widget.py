@@ -11,7 +11,6 @@ def get_color_hue_image()->QtGui.QImage:
         c.setHsv(h+1, s, v, l)
 
     return image
-    return QtGui.QPixmap.fromImage(image)
 
 class HueWidget(QtWidgets.QLabel):
     color_changed = QtCore.Signal(QtGui.QColor)
@@ -20,16 +19,21 @@ class HueWidget(QtWidgets.QLabel):
         super().__init__()
         self.image: QtGui.QImage = get_color_hue_image()
         self._pixmap = QtGui.QPixmap.fromImage(self.image)
-        self._click_pos = QtCore.QPoint(0, 0)
+        self._pos = QtCore.QPointF(0.0, 0.0)
+
+    @property
+    def _point(self):
+        x = int(self.width() * self._pos.x())
+        y = int(self.height() * self._pos.y())
+        return QtCore.QPoint(x,y)
 
     def get_color(self):
-        image = self.pixmap().toImage()
-        color = image.pixelColor(self._click_pos)
+        color = self.pixmap().toImage().pixelColor(self._point)
         return color
 
     def set_color(self, color:QtGui.QColor):
-        hue, saturation, lightness, alpha = color.getHsl()
-        self._click_pos.setX(int((hue * 255) / 360))
+        hue, _, _, _ = color.getHslF()
+        self._pos.setX(hue)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -37,14 +41,16 @@ class HueWidget(QtWidgets.QLabel):
 
     def mousePressEvent(self, event):
         super().mousePressEvent(event)
-        self._click_pos = event.position().toPoint()
+        click_pos = event.position().toPoint()
+        self._pos = QtCore.QPointF(click_pos.x()/ self.width(), click_pos.y()/self.height())
         self.color_changed.emit(self.get_color())
         self.repaint()
 
     def mouseMoveEvent(self, event):
         super().mouseMoveEvent(event)
         if event.buttons() & QtCore.Qt.LeftButton:
-            self._click_pos = event.position().toPoint()
+            click_pos = event.position().toPoint()
+            self._pos = QtCore.QPointF(click_pos.x()/ self.width(), click_pos.y()/self.height())
             self.color_changed.emit(self.get_color())
             self.repaint()
 
@@ -59,8 +65,8 @@ class HueWidget(QtWidgets.QLabel):
         painter.setPen(pen)
 
 #        painter.setBrush(QtCore.Qt.black)
-        if self._click_pos:
-            painter.drawLine(self._click_pos.x(), 0, self._click_pos.x(), self.height())
+        point = self._point
+        painter.drawLine(point.x(), 0, point.x(), self.height())
         painter.end()
 
 if __name__ == '__main__':
