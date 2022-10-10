@@ -19,7 +19,6 @@ class ColorPickerWidget(QtWidgets.QWidget):
    
 #        color = self.hue_widget.get_color()
         self.saturation_value_widget.set_position(QtCore.QPointF(0.25, 0.1))
-
         #self.saturation_value_widget.setFixedSize(700, 200)
 
     def _init_layout(self):

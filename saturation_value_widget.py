@@ -17,42 +17,40 @@ class SaturationValueWidget(QtWidgets.QLabel):
         self.image: QtGui.QImage = get_color_saturation_and_value_image()
         self._pixmap: QtGui.QPixmap = QtGui.QPixmap.fromImage(self.image)
         self.setPixmap(self._pixmap)
-        self._click_pos = QtCore.QPoint(0, 0)
         self._pos = QtCore.QPointF(0.0, 0.0)
 
+    @property
+    def _point(self):
+        x = int(self.width() * self._pos.x())
+        y = int(self.height() * self._pos.y())
+        return QtCore.QPoint(x,y)
+
     def get_color(self):
-        color = self._pixmap.toImage().pixelColor(self._click_pos)
+        color = self._pixmap.toImage().pixelColor(self._point)
         return color
 
     def set_position(self, position: QtCore.QPointF):
         self._pos = position
-        self._click_pos.setX(int(self.width() * self._pos.x()))
-        self._click_pos.setY(int(self.height() * self._pos.y()))
+        self.update()
 
-#    def get_position(self):
-#        x = int(self.width() * self._pos.x())
-#        y = int(self.height() * self._pos.y())
-#        return QtCore.QPoint(x,y)
+    def get_position(self):
+        return self._pos
 
     def resizeEvent(self, event):
         self.setPixmap(self._pixmap.scaled(self.width(), self.height()))
-
-        x = int(self._pos.x() * self.width())
-        y = int(self._pos.y() * self.height())
-        self._click_pos = QtCore.QPoint(x, y)
         return super().resizeEvent(event)
 
     def mousePressEvent(self, event):
         super().mousePressEvent(event)
-        self._click_pos = event.position().toPoint()
-        self._pos = QtCore.QPointF(self._click_pos.x()/ self.width(), self._click_pos.y()/self.height())
+        click_pos = event.position().toPoint()
+        self._pos = QtCore.QPointF(click_pos.x()/ self.width(), click_pos.y()/self.height())
         self.repaint()
 
     def mouseMoveEvent(self, event):
         super().mouseMoveEvent(event)
         if event.buttons() & QtCore.Qt.LeftButton:
-            self._click_pos = event.position().toPoint()
-            self._pos = QtCore.QPointF(self._click_pos.x()/ self.width(), self._click_pos.y()/self.height())
+            click_pos = event.position().toPoint()
+            self._pos = QtCore.QPointF(click_pos.x()/ self.width(), click_pos.y()/self.height())
             self.repaint()
 
     def paintEvent(self, event):
@@ -66,8 +64,7 @@ class SaturationValueWidget(QtWidgets.QLabel):
         painter.setPen(pen)
 
 #        painter.setBrush(QtCore.Qt.NoBrush)
-        if self._click_pos:
-            painter.drawEllipse(self._click_pos, 10, 10)
+        painter.drawEllipse(self._point, 10, 10)
         painter.end()
 
 if __name__ == '__main__':
