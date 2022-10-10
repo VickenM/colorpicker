@@ -15,17 +15,18 @@ class Main(QtWidgets.QLabel):
     def __init__(self):
         super().__init__()
         self.image: QtGui.QImage = get_color_hue_image()
-        self.setPixmap(QtGui.QPixmap.fromImage(self.image))
+        self._pixmap: QtGui.QPixmap = QtGui.QPixmap.fromImage(self.image)
+        self.setPixmap(self._pixmap)
         self.click_pos = None
 
 
     def resizeEvent(self, event):
-        self.setPixmap(self.pixmap().scaled(self.width(), self.height()))
+        self.setPixmap(self._pixmap.scaled(self.width(), self.height()))
         return super().resizeEvent(event)
 
     def mousePressEvent(self, event):
         super().mousePressEvent(event)
-        image = self.pixmap().toImage()
+        image = self._pixmap.toImage()
         c = image.pixelColor(event.position().toPoint())
         print(event.position().toPoint(), c)
         self.click_pos = event.position().toPoint()
