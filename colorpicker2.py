@@ -1,12 +1,12 @@
 from PySide6 import QtCore, QtGui, QtWidgets
 def get_color_hue_image()->QtGui.QImage:
-    image = QtGui.QImage(255, 255, QtGui.QImage.Format_RGB888)
+    image = QtGui.QImage(200, 200, QtGui.QImage.Format_RGB888)
     image.fill(QtGui.QColor(0,0,0))
     
     c = QtGui.QColor()
-    for s_x in range(255):
-        for l_y in range(0, 255):
-            c.setHsl(240, s_x, l_y)
+    for s_x in range(200):
+        for l_y in range(0, 200):
+            c.setHsvF(240/360, s_x/200, 1-l_y/200)
             image.setPixelColor(s_x, l_y, c)
 
     return image
