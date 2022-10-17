@@ -19,9 +19,9 @@ class SaturationValueWidget(QtWidgets.QLabel):
         self._pixmap: QtGui.QPixmap = QtGui.QPixmap()
         self._pos = QtCore.QPointF(0.0, 0.0)
         
-        self.setHue(hue=0)
+        self.set_hue(hue=0)
 
-    def setHue(self, hue):
+    def set_hue(self, hue):
         image: QtGui.QImage = get_color_saturation_and_value_image(hue)
         self._pixmap: QtGui.QPixmap = QtGui.QPixmap.fromImage(image)
         self.setPixmap(self._pixmap.scaled(self.width(), self.height()))
@@ -40,8 +40,14 @@ class SaturationValueWidget(QtWidgets.QLabel):
         color = self.pixmap().toImage().pixelColor(self._point)
         return color
 
+    def set_color(self, color:QtGui.QColor):
+        _, saturation, value, _ = color.getHsvF()
+        point = QtCore.QPointF(saturation, 1-value)
+        self.set_position(point)
+
     def set_position(self, position: QtCore.QPointF):
         self._pos = position
+        self.color_changed.emit(self.get_color())
 
     def get_position(self):
         return self._pos
@@ -69,13 +75,15 @@ class SaturationValueWidget(QtWidgets.QLabel):
         super().paintEvent(event)
 
         painter = QtGui.QPainter(self)
-#        painter.setRenderHint(painter.Antialiasing)
+        painter.setRenderHint(painter.Antialiasing)
 
         pen = QtGui.QPen(QtGui.QColor(255, 255, 255))
         pen.setWidth(1)
         painter.setPen(pen)
 
-#        painter.setBrush(QtCore.Qt.NoBrush)
+        brush = QtGui.QBrush(self.get_color())
+        painter.setBrush(brush)
+
         painter.drawEllipse(self._point, 10, 10)
         painter.end()
 

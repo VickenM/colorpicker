@@ -20,6 +20,7 @@ class HueWidget(QtWidgets.QLabel):
         self.image: QtGui.QImage = get_color_hue_image()
         self._pixmap = QtGui.QPixmap.fromImage(self.image)
         self._pos = QtCore.QPointF(0.0, 0.0)
+        self.setPixmap(self._pixmap.scaled(self.width(), self.height()))
 
     @property
     def _point(self):
@@ -37,6 +38,7 @@ class HueWidget(QtWidgets.QLabel):
     def set_color(self, color:QtGui.QColor):
         hue, _, _, _ = color.getHslF()
         self._pos.setX(hue)
+        self.color_changed.emit(self.get_color())
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
