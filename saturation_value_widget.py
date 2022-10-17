@@ -1,5 +1,7 @@
 from PySide6 import QtCore, QtGui, QtWidgets
-def get_color_saturation_and_value_image(hue: int)->QtGui.QImage:
+
+
+def get_hue_saturation_and_value_image(hue: int)->QtGui.QImage:
     image = QtGui.QImage(255, 255, QtGui.QImage.Format_RGB888)
     image.fill(QtGui.QColor(0,0,0))
     
@@ -16,28 +18,18 @@ class SaturationValueWidget(QtWidgets.QLabel):
 
     def __init__(self):
         super().__init__()
-        self._pixmap: QtGui.QPixmap = QtGui.QPixmap()
-        self._pos = QtCore.QPointF(0.0, 0.0)
-        
+        self._pixmap = QtGui.QPixmap()
+        self._position = QtCore.QPointF(0.0, 0.0)
         self.set_hue(hue=0)
 
     def set_hue(self, hue):
-        image: QtGui.QImage = get_color_saturation_and_value_image(hue)
-        self._pixmap: QtGui.QPixmap = QtGui.QPixmap.fromImage(image)
+        image = get_hue_saturation_and_value_image(hue)
+        self._pixmap = QtGui.QPixmap.fromImage(image)
         self.setPixmap(self._pixmap.scaled(self.width(), self.height()))
         self.color_changed.emit(self.get_color())
 
-    @property
-    def _point(self):
-        x = int(self.width() * self._pos.x())
-        x = max(0, min(x, self.width()-1))
-
-        y = int(self.height() * self._pos.y())
-        y = max(0, min(y, self.height()-1))
-        return QtCore.QPoint(x, y)
-
     def get_color(self):
-        color = self.pixmap().toImage().pixelColor(self._point)
+        color = self.pixmap().toImage().pixelColor(self.get_point())
         return color
 
     def set_color(self, color:QtGui.QColor):
@@ -46,11 +38,27 @@ class SaturationValueWidget(QtWidgets.QLabel):
         self.set_position(point)
 
     def set_position(self, position: QtCore.QPointF):
-        self._pos = position
+        self._position = position
         self.color_changed.emit(self.get_color())
 
     def get_position(self):
-        return self._pos
+        """
+        Get the current position of the color picker point on the 255x255 color image
+
+        """
+        return self._position
+
+    def get_point(self):
+        """
+        Like get_position except the returned value is position point scaled to the current size of the image
+
+        """
+        x = int(self.width() * self._position.x())
+        x = max(0, min(x, self.width()-1))
+
+        y = int(self.height() * self._position.y())
+        y = max(0, min(y, self.height()-1))
+        return QtCore.QPoint(x, y)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -59,7 +67,7 @@ class SaturationValueWidget(QtWidgets.QLabel):
     def mousePressEvent(self, event):
         super().mousePressEvent(event)
         click_pos = event.position().toPoint()
-        self._pos = QtCore.QPointF(click_pos.x()/ self.width(), click_pos.y()/self.height())
+        self._position = QtCore.QPointF(click_pos.x()/ self.width(), click_pos.y()/self.height())
         self.color_changed.emit(self.get_color())
         self.repaint()
 
@@ -67,7 +75,7 @@ class SaturationValueWidget(QtWidgets.QLabel):
         super().mouseMoveEvent(event)
         if event.buttons() & QtCore.Qt.LeftButton:
             click_pos = event.position().toPoint()
-            self._pos = QtCore.QPointF(click_pos.x()/ self.width(), click_pos.y()/self.height())
+            self._position = QtCore.QPointF(click_pos.x()/ self.width(), click_pos.y()/self.height())
             self.color_changed.emit(self.get_color())
             self.repaint()
 
@@ -84,7 +92,7 @@ class SaturationValueWidget(QtWidgets.QLabel):
         brush = QtGui.QBrush(self.get_color())
         painter.setBrush(brush)
 
-        painter.drawEllipse(self._point, 10, 10)
+        painter.drawEllipse(self.get_point(), 10, 10)
         painter.end()
 
 if __name__ == '__main__':
