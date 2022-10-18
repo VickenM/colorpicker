@@ -40,6 +40,7 @@ class SaturationValueWidget(QtWidgets.QLabel):
     def set_position(self, position: QtCore.QPointF):
         self._position = position
         self.color_changed.emit(self.get_color())
+        self.repaint()
 
     def get_position(self):
         """
@@ -62,22 +63,23 @@ class SaturationValueWidget(QtWidgets.QLabel):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
+
         self.setPixmap(self._pixmap.scaled(self.width(), self.height()))
 
     def mousePressEvent(self, event):
         super().mousePressEvent(event)
+
         click_pos = event.position().toPoint()
-        self._position = QtCore.QPointF(click_pos.x()/ self.width(), click_pos.y()/self.height())
-        self.color_changed.emit(self.get_color())
-        self.repaint()
+        position = QtCore.QPointF(click_pos.x()/ self.width(), click_pos.y()/self.height())
+        seelf.set_position(position)
 
     def mouseMoveEvent(self, event):
         super().mouseMoveEvent(event)
+
         if event.buttons() & QtCore.Qt.LeftButton:
             click_pos = event.position().toPoint()
-            self._position = QtCore.QPointF(click_pos.x()/ self.width(), click_pos.y()/self.height())
-            self.color_changed.emit(self.get_color())
-            self.repaint()
+            position = QtCore.QPointF(click_pos.x()/ self.width(), click_pos.y()/self.height())
+            seelf.set_position(position)
 
     def paintEvent(self, event):
         super().paintEvent(event)
