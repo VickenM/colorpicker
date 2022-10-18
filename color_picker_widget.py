@@ -61,9 +61,6 @@ class ColorPickerWidget(QtWidgets.QWidget):
         self._init_connections()
         self._init_layout()
    
-        self.set_color_widget(self.saturation_value_widget.get_color())
-        self.set_color(QtGui.QColor(25, 55, 30))
-
     def _init_layout(self):
         picker_layout = QtWidgets.QVBoxLayout()
         picker_layout.addWidget(self.saturation_value_widget)
@@ -103,4 +100,5 @@ if __name__ == '__main__':
     app = QtWidgets.QApplication()
     widget = ColorPickerWidget()
     widget.show()
+    widget.set_color(QtGui.QColor(25, 55, 30))
     app.exec()
