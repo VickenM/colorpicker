@@ -1,8 +1,8 @@
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from hue_widget import HueWidget
-from saturation_value_widget import SaturationValueWidget
-from color_widget import ColorWidget
+from colorpicker.hue_widget import HueWidget
+from colorpicker.saturation_value_widget import SaturationValueWidget
+from colorpicker.color_widget import ColorWidget
 
 class ColorInfoWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
@@ -95,10 +95,12 @@ class ColorPickerWidget(QtWidgets.QWidget):
         self.hue_widget.set_color(color)
         self.saturation_value_widget.set_color(color)
 
-
-if __name__ == '__main__':
+def main():
     app = QtWidgets.QApplication()
     widget = ColorPickerWidget()
     widget.show()
     widget.set_color(QtGui.QColor(25, 55, 30))
     app.exec()
+
+if __name__ == '__main__':
+    main()
