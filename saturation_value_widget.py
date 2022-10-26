@@ -70,7 +70,7 @@ class SaturationValueWidget(QtWidgets.QLabel):
         super().mousePressEvent(event)
 
         click_pos = event.position().toPoint()
-        position = QtCore.QPointF(click_pos.x()/ self.width(), click_pos.y()/self.height())
+        position = QtCore.QPointF(click_pos.x()/self.width(), click_pos.y()/self.height())
         self.set_position(position)
 
     def mouseMoveEvent(self, event):

@@ -42,6 +42,18 @@ class ColorInfoWidget(QtWidgets.QWidget):
         self.hsv_label.setText(','.join([str(c) for c in self._color.getHsv()]))
         self.hex_label.setText(self._color.name())
 
+class FocusWatcher(QtCore.QObject):
+    focusChanged = QtCore.Signal()
+
+    def eventFilter(self, obj, event):
+        events = [
+            QtCore.QEvent.ActivationChange, # if there was a click somewhere on the screen
+            QtCore.QEvent.MouseButtonPress, # if there was a click in the app window
+           ]
+        if event.type() in events :
+            self.focusChanged.emit()
+        return False
+
 class ColorPickerWidget(QtWidgets.QWidget):
     def __init__(self, parent = None):
         super().__init__(parent=parent)
@@ -58,9 +70,12 @@ class ColorPickerWidget(QtWidgets.QWidget):
 
         self.color_info_widget = ColorInfoWidget()
 
+        self.color_picker_button = QtWidgets.QPushButton('pick color on screen')
+
+        self.focus_watcher = FocusWatcher(self)
         self._init_connections()
         self._init_layout()
-   
+
     def _init_layout(self):
         picker_layout = QtWidgets.QVBoxLayout()
         picker_layout.addWidget(self.saturation_value_widget)
@@ -74,27 +89,45 @@ class ColorPickerWidget(QtWidgets.QWidget):
         layout.addLayout(preview_layout, stretch=1)
         layout.addWidget(self.color_info_widget)
 
+        layout.addWidget(self.color_picker_button)
+
         self.setLayout(layout)
 
     def _init_connections(self):
         self.hue_widget.color_changed.connect(self.on_hue_color_changed)
         self.saturation_value_widget.color_changed.connect(self.on_saturation_value_color_changed)
 
-    def on_hue_color_changed(self, color:QtGui.QColor):
+        self.color_picker_button.clicked.connect(self.on_color_picker_button)
+        self.focus_watcher.focusChanged.connect(self.on_focus_changed)
+
+    def on_hue_color_changed(self, color):
         hue, _, _, _ = color.getHsv()
         self.saturation_value_widget.set_hue(hue)
 
-    def on_saturation_value_color_changed(self, color: QtGui.QColor):
+    def on_saturation_value_color_changed(self, color):
         self.set_color_widget(color)
 
-    def set_color_widget(self, color: QtGui.QColor):
+    def on_color_picker_button(self):
+        self.installEventFilter(self.focus_watcher)
+
+    def on_focus_changed(self):
+        self.removeEventFilter(self.focus_watcher)
+        self.set_screen_pixel_color(QtGui.QCursor().pos())
+
+    def set_screen_pixel_color(self, position):
+        screen = QtGui.QGuiApplication.primaryScreen()
+        pixmap = screen.grabWindow()
+
+        color = pixmap.toImage().pixelColor(position)
+        self.set_color(color)
+
+    def set_color_widget(self, color):
         self.color_widget.set_color(color)
         self.color_info_widget.set_color(color)
 
-    def set_color(self, color:QtGui.QColor):
+    def set_color(self, color):
         self.hue_widget.set_color(color)
         self.saturation_value_widget.set_color(color)
-
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication()
