@@ -18,10 +18,8 @@ class HueWidget(QtWidgets.QLabel):
 
     def __init__(self):
         super().__init__()
-        self.image: QtGui.QImage = get_color_hue_image()
-        self._pixmap = QtGui.QPixmap.fromImage(self.image)
+        self._pixmap = QtGui.QPixmap.fromImage(get_color_hue_image())
         self._position = QtCore.QPointF(0.0, 0.0)
-        self.setPixmap(self._pixmap.scaled(self.width(), self.height()))
 
     def set_position(self, position):
         self._position = position
@@ -37,7 +35,7 @@ class HueWidget(QtWidgets.QLabel):
         return QtCore.QPoint(x,y)
 
     def get_color(self):
-        color = self.pixmap().toImage().pixelColor(self.get_point())
+        color = self._pixmap.scaled(self.width(), self.height()).toImage().pixelColor(self.get_point())
         return color
 
     def set_color(self, color:QtGui.QColor):
@@ -47,8 +45,6 @@ class HueWidget(QtWidgets.QLabel):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-
-        self.setPixmap(self._pixmap.scaled(self.width(), self.height()))
 
     def mousePressEvent(self, event):
         super().mousePressEvent(event)
@@ -66,16 +62,19 @@ class HueWidget(QtWidgets.QLabel):
             self.set_position(position)
 
     def paintEvent(self, event):
-        super().paintEvent(event)
-
+        padding = 3
         painter = QtGui.QPainter(self)
 
+        painter.drawPixmap(0,padding, self.width(), self.height()-(padding*2), self._pixmap)
+
         pen = QtGui.QPen(QtGui.QColor('#ffffff'))
-        pen.setWidth(1)
+        pen.setWidth(2)
         painter.setPen(pen)
 
         point = self.get_point()
-        painter.drawLine(point.x(), 0, point.x(), self.height())
+
+        painter.setRenderHint(painter.Antialiasing)
+        painter.drawRoundedRect(point.x()-3, 0, 7, self.height()-1, 50, 50, mode=QtCore.Qt.SizeMode.RelativeSize)
         painter.end()
 
 if __name__ == '__main__':
