@@ -43,6 +43,7 @@ class ColorInfoWidget(QtWidgets.QWidget):
         self.hex_label.setText(self._color.name())
 
 class ColorPickerWidget(QtWidgets.QWidget):
+    current_color = QtCore.Signal(QtGui.QColor)
     def __init__(self, parent = None):
         super().__init__(parent=parent)
 
@@ -83,9 +84,11 @@ class ColorPickerWidget(QtWidgets.QWidget):
     def on_hue_color_changed(self, color:QtGui.QColor):
         hue, _, _, _ = color.getHsv()
         self.saturation_value_widget.set_hue(hue)
+        self.current_color.emit(color)
 
     def on_saturation_value_color_changed(self, color: QtGui.QColor):
         self.set_color_widget(color)
+        self.current_color.emit(color)
 
     def set_color_widget(self, color: QtGui.QColor):
         self.color_widget.set_color(color)
@@ -97,8 +100,12 @@ class ColorPickerWidget(QtWidgets.QWidget):
 
 
 if __name__ == '__main__':
+    def on_color_changed(color):
+        print(color)
+
     app = QtWidgets.QApplication()
     widget = ColorPickerWidget()
+    widget.current_color.connect(on_color_changed)
     widget.show()
     widget.set_color(QtGui.QColor(25, 55, 30))
     app.exec()
